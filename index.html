@@ -135,10 +135,14 @@ fetch(urlDatos + "?modo=MANUAL&bomba=OFF")
 // -------- INICIAR --------
 
 cargarDatos();
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
+}
 
 </script>
 
 </body>
 
 </html>
+
 
