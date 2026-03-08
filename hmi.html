@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>HMI Tanque IoT</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f2f2f2;
+text-align:center;
+}
+
+.panel{
+background:white;
+width:500px;
+margin:auto;
+padding:20px;
+border-radius:10px;
+box-shadow:0 0 10px gray;
+}
+
+button{
+padding:10px;
+margin:5px;
+font-size:16px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="panel">
+
+<h2>Tanque IoT</h2>
+
+<p>Nivel actual: <span id="nivel">0</span>%</p>
+
+<h3>Modo de operación</h3>
+
+<button onclick="modoAuto()">AUTO</button>
+
+<h3>Control manual</h3>
+
+<button onclick="bombaOn()">MANUAL ON</button>
+<button onclick="bombaOff()">MANUAL OFF</button>
+
+<br><br>
+
+<canvas id="grafica"></canvas>
+
+</div>
+
+<script>
+
+// -------- CAMBIAR ESTA URL --------
+
+const urlDatos = "https://script.google.com/macros/s/AKfycbzOhTu018VATyRCRYkf4OWqlrngQ3AKleDSkyQUGgGQIIfw-_7B6F62M1L_hOXvMs8W/exec";
+
+
+// -------- CARGAR DATOS PARA GRAFICA --------
+
+async function cargarDatos(){
+
+let response = await fetch(urlDatos);
+
+let data = await response.json();
+
+let tiempo = [];
+let nivel = [];
+
+data.forEach(d => {
+
+tiempo.push(new Date(d.fecha).toLocaleTimeString());
+nivel.push(d.porcentaje);
+
+});
+
+document.getElementById("nivel").innerHTML =
+nivel[nivel.length-1];
+
+new Chart(document.getElementById("grafica"),{
+
+type:"line",
+
+data:{
+labels: tiempo,
+
+datasets:[{
+label:"Nivel tanque (%)",
+data:nivel,
+borderColor:"blue",
+fill:false
+}]
+}
+
+});
+
+}
+
+
+// -------- BOTONES DE CONTROL --------
+
+function modoAuto(){
+
+fetch(urlDatos + "?modo=AUTO")
+.then(response => console.log("AUTO enviado"));
+
+}
+
+function bombaOn(){
+
+fetch(urlDatos + "?modo=MANUAL&bomba=ON")
+.then(response => console.log("MANUAL ON enviado"));
+
+}
+
+function bombaOff(){
+
+fetch(urlDatos + "?modo=MANUAL&bomba=OFF")
+.then(response => console.log("MANUAL OFF enviado"));
+
+}
+
+
+// -------- INICIAR --------
+
+cargarDatos();
+
+</script>
+
+</body>
+
+</html>
