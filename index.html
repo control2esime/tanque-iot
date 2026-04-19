@@ -33,6 +33,16 @@ margin:5px;
 font-size:16px;
 }
 
+/* LEDs */
+.led{
+width:40px;
+height:40px;
+border-radius:50%;
+display:inline-block;
+margin:10px;
+background:gray;
+}
+
 </style>
 
 </head>
@@ -45,14 +55,16 @@ font-size:16px;
 
 <p>Nivel actual: <span id="nivel">0</span>%</p>
 
-<h3>Modo de operación</h3>
+<!-- LEDs -->
+<h3>Estado del sistema</h3>
+<div id="ledVerde" class="led"></div>
+<div id="ledRojo" class="led"></div>
 
-<button onclick="modoAuto()">AUTO</button>
+<h3>Control</h3>
 
-<h3>Control manual</h3>
-
-<button onclick="bombaOn()">MANUAL ON</button>
-<button onclick="bombaOff()">MANUAL OFF</button>
+<button onclick="startSistema()">START</button>
+<button onclick="paroEmergencia()">PARO DE EMERGENCIA</button>
+<button onclick="paroPorHora()">PARO POR HORA</button>
 
 <br><br>
 
@@ -62,39 +74,32 @@ font-size:16px;
 
 <script>
 
-// -------- CAMBIAR ESTA URL --------
-
+// -------- URL --------
 const urlDatos = "https://script.google.com/macros/s/AKfycbzOhTu018VATyRCRYkf4OWqlrngQ3AKleDSkyQUGgGQIIfw-_7B6F62M1L_hOXvMs8W/exec";
 
 
-// -------- CARGAR DATOS PARA GRAFICA --------
+// -------- GRAFICA --------
 
 async function cargarDatos(){
 
 let response = await fetch(urlDatos);
-
 let data = await response.json();
 
 let tiempo = [];
 let nivel = [];
 
 data.forEach(d => {
-
 tiempo.push(new Date(d.fecha).toLocaleTimeString());
 nivel.push(d.porcentaje);
-
 });
 
 document.getElementById("nivel").innerHTML =
 nivel[nivel.length-1];
 
 new Chart(document.getElementById("grafica"),{
-
 type:"line",
-
 data:{
 labels: tiempo,
-
 datasets:[{
 label:"Nivel tanque (%)",
 data:nivel,
@@ -102,41 +107,74 @@ borderColor:"blue",
 fill:false
 }]
 }
-
 });
 
 }
 
+function actualizarLEDs(estado){
 
-// -------- BOTONES DE CONTROL --------
+let verde = document.getElementById("ledVerde");
+let rojo = document.getElementById("ledRojo");
 
-function modoAuto(){
-
-fetch(urlDatos + "?modo=AUTO")
-.then(response => console.log("AUTO enviado"));
-
+if(estado == "ON"){
+verde.style.background = "green";
+rojo.style.background = "gray";
+}else{
+verde.style.background = "gray";
+rojo.style.background = "red";
 }
-
-function bombaOn(){
-
-fetch(urlDatos + "?modo=MANUAL&bomba=ON")
-.then(response => console.log("MANUAL ON enviado"));
-
-}
-
-function bombaOff(){
-
-fetch(urlDatos + "?modo=MANUAL&bomba=OFF")
-.then(response => console.log("MANUAL OFF enviado"));
 
 }
 
 
-// -------- INICIAR --------
+// -------- BOTONES --------
+
+function startSistema(){
+
+fetch(urlDatos + "?estado=ON")
+.then(res => res.text())
+.then(data => actualizarLEDs(data));
+
+}
+
+function paroEmergencia(){
+
+fetch(urlDatos + "?estado=OFF")
+.then(res => res.text())
+.then(data => actualizarLEDs(data));
+
+}
+
+function paroPorHora(){
+
+let hora = prompt("Ingresa hora (HH:MM)");
+
+if(!hora) return;
+
+let ahora = new Date();
+let [h,m] = hora.split(":");
+
+let paro = new Date();
+paro.setHours(h,m,0);
+
+if(paro <= ahora){
+alert("❌ Hora inválida (ya pasó)");
+return;
+}
+
+fetch(urlDatos + "?estado=SCHEDULED&hora=" + hora)
+.then(res => res.text())
+.then(data => actualizarLEDs(data));
+
+}
+
+
+// -------- INICIO --------
 
 cargarDatos();
+
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
+navigator.serviceWorker.register("service-worker.js");
 }
 
 </script>
@@ -144,5 +182,3 @@ if ("serviceWorker" in navigator) {
 </body>
 
 </html>
-
-
