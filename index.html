@@ -111,18 +111,34 @@ fill:false
 
 }
 
+
+// -------- LEDS --------
+
 function actualizarLEDs(estado){
+
+estado = estado.trim(); // 🔥 CORRECCIÓN CLAVE
 
 let verde = document.getElementById("ledVerde");
 let rojo = document.getElementById("ledRojo");
 
-if(estado == "ON"){
+if(estado === "ON"){
 verde.style.background = "green";
 rojo.style.background = "gray";
 }else{
 verde.style.background = "gray";
 rojo.style.background = "red";
 }
+
+}
+
+
+// -------- OBTENER ESTADO AUTOMÁTICO --------
+
+function obtenerEstado(){
+
+fetch(urlDatos + "?control=1")
+.then(res => res.text())
+.then(estado => actualizarLEDs(estado));
 
 }
 
@@ -172,6 +188,13 @@ fetch(urlDatos + "?estado=SCHEDULED&hora=" + hora)
 // -------- INICIO --------
 
 cargarDatos();
+obtenerEstado();
+
+// 🔄 Actualiza cada 3 segundos
+setInterval(obtenerEstado, 3000);
+
+
+// -------- SERVICE WORKER --------
 
 if ("serviceWorker" in navigator) {
 navigator.serviceWorker.register("service-worker.js");
