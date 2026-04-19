@@ -79,7 +79,6 @@ const urlDatos = "https://script.google.com/macros/s/AKfycbzOhTu018VATyRCRYkf4OW
 
 
 // -------- GRAFICA --------
-
 async function cargarDatos(){
 
 let response = await fetch(urlDatos);
@@ -113,15 +112,15 @@ fill:false
 
 
 // -------- LEDS --------
-
 function actualizarLEDs(estado){
 
-estado = estado.trim(); // 🔥 CORRECCIÓN CLAVE
+estado = estado.trim();
 
 let verde = document.getElementById("ledVerde");
 let rojo = document.getElementById("ledRojo");
 
-if(estado === "ON"){
+// 🔥 NUEVA LOGICA
+if(estado === "MANUAL" || estado === "AUTO"){
 verde.style.background = "green";
 rojo.style.background = "gray";
 }else{
@@ -132,8 +131,7 @@ rojo.style.background = "red";
 }
 
 
-// -------- OBTENER ESTADO AUTOMÁTICO --------
-
+// -------- OBTENER ESTADO --------
 function obtenerEstado(){
 
 fetch(urlDatos + "?control=1")
@@ -145,14 +143,16 @@ fetch(urlDatos + "?control=1")
 
 // -------- BOTONES --------
 
+// START → MANUAL
 function startSistema(){
 
-fetch(urlDatos + "?estado=ON")
+fetch(urlDatos + "?estado=MANUAL")
 .then(res => res.text())
 .then(data => actualizarLEDs(data));
 
 }
 
+// PARO
 function paroEmergencia(){
 
 fetch(urlDatos + "?estado=OFF")
@@ -161,6 +161,7 @@ fetch(urlDatos + "?estado=OFF")
 
 }
 
+// PARO POR HORA → AUTO
 function paroPorHora(){
 
 let hora = prompt("Ingresa hora (HH:MM)");
@@ -178,7 +179,7 @@ alert("❌ Hora inválida (ya pasó)");
 return;
 }
 
-fetch(urlDatos + "?estado=SCHEDULED&hora=" + hora)
+fetch(urlDatos + "?estado=AUTO&hora=" + hora)
 .then(res => res.text())
 .then(data => actualizarLEDs(data));
 
@@ -186,7 +187,6 @@ fetch(urlDatos + "?estado=SCHEDULED&hora=" + hora)
 
 
 // -------- INICIO --------
-
 cargarDatos();
 obtenerEstado();
 
@@ -195,7 +195,6 @@ setInterval(obtenerEstado, 3000);
 
 
 // -------- SERVICE WORKER --------
-
 if ("serviceWorker" in navigator) {
 navigator.serviceWorker.register("service-worker.js");
 }
