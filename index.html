@@ -119,7 +119,7 @@ estado = estado.trim();
 let verde = document.getElementById("ledVerde");
 let rojo = document.getElementById("ledRojo");
 
-// 🔥 NUEVA LOGICA
+// 🔥 LED basado en estado REAL
 if(estado === "MANUAL" || estado === "AUTO"){
 verde.style.background = "green";
 rojo.style.background = "gray";
@@ -143,25 +143,17 @@ fetch(urlDatos + "?control=1")
 
 // -------- BOTONES --------
 
-// START → MANUAL
+// 🔘 START → SOLO ENVÍA (NO CAMBIA LED)
 function startSistema(){
-
-fetch(urlDatos + "?estado=MANUAL")
-.then(res => res.text())
-.then(data => actualizarLEDs(data));
-
+fetch(urlDatos + "?estado=MANUAL");
 }
 
-// PARO
+// 🚨 PARO
 function paroEmergencia(){
-
-fetch(urlDatos + "?estado=OFF")
-.then(res => res.text())
-.then(data => actualizarLEDs(data));
-
+fetch(urlDatos + "?estado=OFF");
 }
 
-// PARO POR HORA → AUTO
+// ⏱️ PARO POR HORA
 function paroPorHora(){
 
 let hora = prompt("Ingresa hora (HH:MM)");
@@ -179,10 +171,7 @@ alert("❌ Hora inválida (ya pasó)");
 return;
 }
 
-fetch(urlDatos + "?estado=AUTO&hora=" + hora)
-.then(res => res.text())
-.then(data => actualizarLEDs(data));
-
+fetch(urlDatos + "?estado=AUTO&hora=" + hora);
 }
 
 
@@ -190,7 +179,7 @@ fetch(urlDatos + "?estado=AUTO&hora=" + hora)
 cargarDatos();
 obtenerEstado();
 
-// 🔄 Actualiza cada 3 segundos
+// 🔄 Actualiza cada 3 segundos (LED REAL)
 setInterval(obtenerEstado, 3000);
 
 
